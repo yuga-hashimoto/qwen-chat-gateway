@@ -5,12 +5,17 @@ import { Page } from 'playwright-core';
 
 // 簡易的な Page のモックを作成するヘルパー
 function createMockPage(url: string, innerTextContent: string): Page {
+  const locatorMock = {
+    filter: () => locatorMock,
+    count: async () => 0,
+  };
   return {
     url: () => url,
     innerText: async (selector: string) => {
       if (selector === 'body') return innerTextContent;
       return '';
     },
+    locator: () => locatorMock,
   } as unknown as Page;
 }
 

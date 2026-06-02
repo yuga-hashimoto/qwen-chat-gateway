@@ -123,8 +123,13 @@ export class BrowserSession {
       const url = page.url();
 
       // 1. ログインチェック
-      // 未ログインの場合、URLが /login であったり、DOMに特定のボタンがある
-      if (url.includes('/login') || url.includes('/signin')) {
+      const loginBtn = page.locator('button, a').filter({ hasText: /ログイン|新規登録|sign in|log in/i });
+      let loginBtnCount = 0;
+      try {
+        loginBtnCount = await loginBtn.count();
+      } catch {}
+
+      if (url.includes('/login') || url.includes('/signin') || loginBtnCount > 0) {
         loggedIn = false;
       } else {
         // セレクタでチャット入力欄を探す

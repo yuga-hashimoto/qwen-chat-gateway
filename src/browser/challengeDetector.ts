@@ -14,7 +14,13 @@ export async function detectChallenge(page: Page): Promise<void> {
   const url = page.url();
 
   // 1. ログイン要求ページのチェック
-  if (url.includes('/login') || url.includes('/signin')) {
+  const loginBtn = page.locator('button, a').filter({ hasText: /ログイン|新規登録|sign in|log in/i });
+  let loginBtnCount = 0;
+  try {
+    loginBtnCount = await loginBtn.count();
+  } catch {}
+
+  if (url.includes('/login') || url.includes('/signin') || loginBtnCount > 0) {
     throw new QwenGatewayError(
       'qwen_not_logged_in',
       'User is not logged in. Please check the visible browser and log in manually.',
