@@ -60,36 +60,36 @@ cli
     }
   });
 
-// 2. browser open コマンド
+// 2. browser コマンド (open / doctor)
 cli
-  .command('browser open', 'Open persistent Qwen browser session in visible mode for manual login')
-  .action(async () => {
+  .command('browser <action>', 'Browser operations: open | doctor')
+  .action(async (action) => {
     const config = getConfig();
-    console.log(`[CLI] Opening default system browser to Qwen Web URL: ${config.QWEN_WEB_URL}`);
-    try {
-      await openBrowser(config.QWEN_WEB_URL);
-      console.log('[CLI] Browser opened. Please ensure you are logged in.');
-    } catch (err: any) {
-      console.error('[CLI Error] Failed to open browser:', redact(err.message));
-      process.exit(1);
-    }
-  });
-
-// 3. browser doctor コマンド
-cli
-  .command('browser doctor', 'Check environment, browser paths, and login status')
-  .action(async () => {
-    console.log('[CLI] Diagnosing browser session...');
-    try {
-      const report = await defaultBrowserSession.checkHealth();
-      console.log('\n--- Qwen Chat Gateway Doctor Report ---');
-      console.log(`Browser Executable Path: ${report.browserPath || 'Not Found'}`);
-      console.log(`Qwen Web Reachable:     ${report.reachable ? 'YES' : 'NO'}`);
-      console.log(`User Logged In:         ${report.loggedIn ? 'YES' : 'NO'}`);
-      console.log(`Challenge Detected:     ${report.challenge ? 'YES' : 'NO'}`);
-      console.log('--------------------------------------\n');
-    } catch (err: any) {
-      console.error('[CLI Error] Doctor diagnostics failed:', redact(err.message));
+    if (action === 'open') {
+      console.log(`[CLI] Opening default system browser to Qwen Web URL: ${config.QWEN_WEB_URL}`);
+      try {
+        await openBrowser(config.QWEN_WEB_URL);
+        console.log('[CLI] Browser opened. Please ensure you are logged in.');
+      } catch (err: any) {
+        console.error('[CLI Error] Failed to open browser:', redact(err.message));
+        process.exit(1);
+      }
+    } else if (action === 'doctor') {
+      console.log('[CLI] Diagnosing browser session...');
+      try {
+        const report = await defaultBrowserSession.checkHealth();
+        console.log('\n--- Qwen Chat Gateway Doctor Report ---');
+        console.log(`Browser Executable Path: ${report.browserPath || 'Not Found'}`);
+        console.log(`Qwen Web Reachable:     ${report.reachable ? 'YES' : 'NO'}`);
+        console.log(`User Logged In:         ${report.loggedIn ? 'YES' : 'NO'}`);
+        console.log(`Challenge Detected:     ${report.challenge ? 'YES' : 'NO'}`);
+        console.log('--------------------------------------\n');
+      } catch (err: any) {
+        console.error('[CLI Error] Doctor diagnostics failed:', redact(err.message));
+        process.exit(1);
+      }
+    } else {
+      console.error(`[CLI Error] Unknown browser action: ${action}. Use "open" or "doctor".`);
       process.exit(1);
     }
   });
@@ -209,13 +209,17 @@ cli
     }
   });
 
-// 7. import latest コマンド
+// 7. import コマンド (latest)
 cli
-  .command('import latest', 'Import the latest media file from downloads directory, and clean up the original')
+  .command('import <action>', 'Import operations: latest')
   .option('--type <type>', 'Type of file: image | video')
   .option('--downloads-dir <dir>', 'Custom path to downloads directory')
   .option('--json', 'Output results in JSON format')
-  .action(async (options) => {
+  .action(async (action, options) => {
+    if (action !== 'latest') {
+      console.error(`[CLI Error] Unknown import action: ${action}. Use "latest".`);
+      process.exit(1);
+    }
     if (!options.type || (options.type !== 'image' && options.type !== 'video')) {
       console.error('[CLI Error] Option --type is required (must be "image" or "video")');
       process.exit(1);
@@ -243,24 +247,24 @@ cli
     }
   });
 
-// 8. mcp serve コマンド
+// 8. mcp コマンド (serve / install-config)
 cli
-  .command('mcp serve', 'Start the Model Context Protocol (MCP) server')
-  .action(async () => {
-    console.log('[CLI] Starting MCP server...');
-    try {
-      await runMcpServer();
-    } catch (err: any) {
-      console.error('[CLI Error] MCP server crashed:', redact(err.message));
+  .command('mcp <action>', 'MCP server operations: serve | install-config')
+  .action(async (action) => {
+    if (action === 'serve') {
+      console.error('[CLI] Starting MCP server...');
+      try {
+        await runMcpServer();
+      } catch (err: any) {
+        console.error('[CLI Error] MCP server crashed:', redact(err.message));
+        process.exit(1);
+      }
+    } else if (action === 'install-config') {
+      printMcpConfig();
+    } else {
+      console.error(`[CLI Error] Unknown MCP action: ${action}. Use "serve" or "install-config".`);
       process.exit(1);
     }
-  });
-
-// 9. mcp install-config コマンド
-cli
-  .command('mcp install-config', 'Show MCP configuration snippet for Claude Code')
-  .action(() => {
-    printMcpConfig();
   });
 
 // 解析の実行
