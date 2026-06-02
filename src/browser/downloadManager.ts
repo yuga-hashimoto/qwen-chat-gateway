@@ -1,5 +1,5 @@
 import { Page, Download } from 'playwright-core';
-import { getSelector } from './selectors';
+import { getSelector, waitForSelector } from './selectors';
 import { QwenGatewayError } from '../models/errors';
 
 /**
@@ -15,7 +15,8 @@ export async function downloadLatestFile(
 
   let downloadButton;
   try {
-    downloadButton = await getSelector(page, selectorKey);
+    // レンダリングの遅延に備えて出現を待つ
+    downloadButton = await waitForSelector(page, selectorKey, 15000);
   } catch (err: any) {
     throw new QwenGatewayError(
       'qwen_selector_not_found',
@@ -27,8 +28,21 @@ export async function downloadLatestFile(
   // ダウンロードイベントの待機を設定
   const downloadPromise = page.waitForEvent('download', { timeout: timeoutMs });
 
-  // ダウンロードボタンをクリック
-  await downloadButton.click();
+  // ボタンにホバーしてアクティブ化を促す（ホバー表示対策）
+  try {
+    await downloadButton.hover({ timeout: 2000 });
+  } catch {
+    // ホバーに失敗した場合はそのまま進む
+  }
+
+  // ダウンロードボタンを強制クリック (フリーズ防止のためタイムアウト5秒とforce: trueを指定)
+  try {
+    await downloadButton.click({ force: true, timeout: 5000 });
+  } catch (err: any) {
+    console.warn(`[Download Warning] Initial click attempt failed: ${err.message}. Retrying with regular click...`);
+    // フォールバックとして通常のクリックを試みる
+    await downloadButton.click({ timeout: 10000 });
+  }
 
   let download: Download;
   try {

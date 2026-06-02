@@ -161,5 +161,26 @@ export class BrowserSession {
       challenge,
     };
   }
+
+  /**
+   * エラー発生時にデバッグ用のスクリーンショットを artifacts ディレクトリに保存します。
+   */
+  async takeErrorScreenshot(label: string): Promise<string | null> {
+    if (!this.page) return null;
+    try {
+      const config = getConfig();
+      const artifactsDir = path.resolve(config.QWEN_ARTIFACTS_DIR);
+      await ensureDir(artifactsDir);
+      
+      const filename = `error_${label}_${Date.now()}.png`;
+      const screenshotPath = path.join(artifactsDir, filename);
+      await this.page.screenshot({ path: screenshotPath });
+      console.log(`[BrowserSession] Saved debug screenshot to: ${screenshotPath}`);
+      return screenshotPath;
+    } catch (err: any) {
+      console.warn(`[BrowserSession Warning] Failed to take error screenshot: ${err.message}`);
+      return null;
+    }
+  }
 }
 export const defaultBrowserSession = new BrowserSession();

@@ -8,7 +8,9 @@ export type QwenGatewayErrorCode =
   | 'browser_launch_failed'
   | 'artifact_save_failed'
   | 'invalid_request'
-  | 'unsupported_feature';
+  | 'unsupported_feature'
+  | 'qwen_mode_switch_failed'
+  | 'qwen_generation_failed';
 
 export class QwenGatewayError extends Error {
   public readonly code: QwenGatewayErrorCode;

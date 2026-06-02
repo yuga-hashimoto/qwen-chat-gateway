@@ -84,8 +84,9 @@ export async function detectChallenge(page: Page): Promise<void> {
     'しばらく時間をおいて',
     'try again later',
     'リクエストが多すぎます',
-    'limit exceeded',
+    'reached the limit',
     'usage limit',
+    'reached the daily',
   ];
 
   for (const keyword of rateLimitKeywords) {
