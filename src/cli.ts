@@ -66,13 +66,30 @@ cli
   .action(async (action) => {
     const config = getConfig();
     if (action === 'open') {
-      console.log(`[CLI] Opening default system browser to Qwen Web URL: ${config.QWEN_WEB_URL}`);
+      console.log(`[CLI] Launching Qwen Browser Session for manual login...`);
+      console.log(`[CLI] User Data Directory: ${config.QWEN_BROWSER_USER_DATA_DIR}`);
       try {
-        await openBrowser(config.QWEN_WEB_URL);
-        console.log('[CLI] Browser opened. Please ensure you are logged in.');
+        const page = await defaultBrowserSession.ensurePage();
+        await page.goto(config.QWEN_WEB_URL, { waitUntil: 'domcontentloaded', timeout: 60000 });
+        
+        console.log('\n======================================================');
+        console.log('[CLI] Visible browser window has been opened.');
+        console.log('[CLI] Please MANUALLY LOG IN to Qwen in this window.');
+        console.log('[CLI] Once logged in, close the browser window to complete.');
+        console.log('======================================================\n');
+
+        // ユーザーがブラウザウィンドウ（ページまたはコンテキスト）を閉じるまでプロセスを待機させる
+        await new Promise<void>((resolve) => {
+          page.on('close', () => resolve());
+          defaultBrowserSession.getContext()?.on('close', () => resolve());
+        });
+        
+        console.log('[CLI] Browser session window closed. Login state saved successfully.');
       } catch (err: any) {
-        console.error('[CLI Error] Failed to open browser:', redact(err.message));
+        console.error('[CLI Error] Failed to launch login session:', redact(err.message));
         process.exit(1);
+      } finally {
+        await defaultBrowserSession.close();
       }
     } else if (action === 'doctor') {
       console.log('[CLI] Diagnosing browser session...');
