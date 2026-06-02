@@ -34,8 +34,8 @@ const configSchema = z.object({
     z.number().int().positive().default(8787)
   ),
   QWEN_BROWSER_HEADLESS: z.preprocess(
-    (val) => String(val).toLowerCase() === 'true',
-    z.boolean().default(false)
+    (val) => val === undefined ? true : String(val).toLowerCase() !== 'false',
+    z.boolean().default(true)
   ),
   QWEN_BROWSER_USER_DATA_DIR: z.string().default('./browser_data/qwen'),
   QWEN_BROWSER_EXECUTABLE_PATH: z.string().optional().or(z.literal('')),
