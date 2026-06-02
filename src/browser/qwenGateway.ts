@@ -49,7 +49,12 @@ export class QwenBrowserGateway {
     }
 
     // 2. プロンプト入力と送信
-    console.log(`[QwenBrowserGateway] Sending prompt: "${input.prompt.substring(0, 60)}..."`);
+    const config = getConfig();
+    if (config.QWEN_STORE_PROMPTS) {
+      console.log(`[QwenBrowserGateway] Sending prompt: "${input.prompt.substring(0, 60)}..."`);
+    } else {
+      console.log(`[QwenBrowserGateway] Sending prompt. length=${input.prompt.length}`);
+    }
     const chatInput = await getSelector(page, 'chatInput');
     await chatInput.fill(input.prompt);
     await sleep(500); // 送信ボタンの活性化を待つ
@@ -245,7 +250,12 @@ export class QwenBrowserGateway {
     // 1. 画像生成モードへの切り替え
     await this.switchToCreativeMode('image');
 
-    console.log(`[QwenBrowserGateway] Requesting image generation: "${input.prompt}"`);
+    const config = getConfig();
+    if (config.QWEN_STORE_PROMPTS) {
+      console.log(`[QwenBrowserGateway] Requesting image generation: "${input.prompt}"`);
+    } else {
+      console.log(`[QwenBrowserGateway] Requesting image generation. length=${input.prompt.length}`);
+    }
 
     // 2. プロンプト入力と送信
     const chatInput = await getSelector(page, 'chatInput');
@@ -318,7 +328,12 @@ export class QwenBrowserGateway {
     // 1. 動画生成モードへの切り替え
     await this.switchToCreativeMode('video');
 
-    console.log(`[QwenBrowserGateway] Requesting video generation: "${input.prompt}"`);
+    const config = getConfig();
+    if (config.QWEN_STORE_PROMPTS) {
+      console.log(`[QwenBrowserGateway] Requesting video generation: "${input.prompt}"`);
+    } else {
+      console.log(`[QwenBrowserGateway] Requesting video generation. length=${input.prompt.length}`);
+    }
 
     if (input.wait) {
       // 完了を待つ場合

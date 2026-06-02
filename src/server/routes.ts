@@ -70,6 +70,14 @@ function authenticate(req: IncomingMessage, res: ServerResponse): boolean {
     token = authHeader.substring(7);
   } else if (typeof apiKeyHeader === 'string') {
     token = apiKeyHeader;
+  } else {
+    // クエリパラメータから抽出
+    try {
+      const urlObj = new URL(req.url || '', `http://${req.headers.host || 'localhost'}`);
+      token = urlObj.searchParams.get('api_key') || '';
+    } catch {
+      token = '';
+    }
   }
 
   if (token !== config.QWEN_LOCAL_API_KEY) {
@@ -101,10 +109,13 @@ export async function handleRoutes(
     return;
   }
 
-  // 静的アーティファクトの配信 (認証不要とする)
+  // 静的アーティファクトの配信 (APIキー有効時は認証を要求する)
   if (url.startsWith('/artifacts/')) {
     if (method !== 'GET') {
       return sendError(res, new QwenGatewayError('invalid_request', 'Method Not Allowed', 405));
+    }
+    if (!authenticate(req, res)) {
+      return;
     }
     return serveArtifact(url, res);
   }
@@ -160,14 +171,10 @@ export async function handleRoutes(
       const body = await readJsonBody(req);
       const parsed = chatRequestSchema.parse(body);
 
-      // 対話履歴からQwenに送る最後の入力プロンプトを構築
-      // 単純化のため、messagesの最後の要素をプロンプトとし、それ以前をコンテキストと見なせるが、
-      // 既存のWebチャットセッションの都合上、最後のユーザーメッセージをそのままQwenの入力欄に入力します。
-      const userMessages = parsed.messages.filter((m) => m.role === 'user');
-      if (userMessages.length === 0) {
-        throw new QwenGatewayError('invalid_request', 'No user messages provided', 400);
+      if (parsed.messages.length === 0) {
+        throw new QwenGatewayError('invalid_request', 'No messages provided', 400);
       }
-      const prompt = userMessages[userMessages.length - 1].content;
+      const prompt = normalizeMessagesToPrompt(parsed.messages);
 
       // SingleQueue経由でQwenBrowserGatewayを実行
       const result = await queueInstance.enqueue(async () => {
@@ -288,4 +295,31 @@ export async function handleRoutes(
 
   // マッチしないルート
   sendNotFound(res, `Endpoint not found: ${method} ${url}`);
+}
+
+/**
+ * OpenAI形式の会話履歴メッセージ配列を1つのプロンプト文字列にフォーマットして文脈を保持します。
+ */
+export function normalizeMessagesToPrompt(
+  messages: Array<{ role: 'user' | 'assistant' | 'system'; content: string }>
+): string {
+  const systemMessages = messages.filter((m) => m.role === 'system');
+  const otherMessages = messages.filter((m) => m.role !== 'system');
+
+  let prompt = '';
+
+  if (systemMessages.length > 0) {
+    prompt += 'System:\n';
+    prompt += systemMessages.map((m) => m.content).join('\n') + '\n\n';
+  }
+
+  if (otherMessages.length > 0) {
+    prompt += 'Conversation:\n';
+    for (const msg of otherMessages) {
+      const roleName = msg.role === 'user' ? 'User' : (msg.role === 'assistant' ? 'Assistant' : 'System');
+      prompt += `${roleName}: ${msg.content}\n`;
+    }
+  }
+
+  return prompt.trim();
 }

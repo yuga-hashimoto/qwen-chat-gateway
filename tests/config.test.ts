@@ -7,7 +7,7 @@ describe('Configuration Tests', () => {
     expect(config.QWEN_WEB_URL).toBe('https://chat.qwen.ai');
     expect(config.QWEN_HOST).toBe('127.0.0.1');
     expect(config.QWEN_PORT).toBe(8787);
-    expect(config.QWEN_BROWSER_HEADLESS).toBe(true);
+    expect(config.QWEN_BROWSER_HEADLESS).toBe(false);
     expect(config.QWEN_BROWSER_USER_DATA_DIR).toBe('./browser_data/qwen');
     expect(config.QWEN_MAX_CONCURRENCY).toBe(1);
     expect(config.QWEN_MIN_INTERVAL_MS).toBe(60000);

@@ -85,4 +85,33 @@ describe('API Routes Tests', () => {
     const responseBody = JSON.parse((res.end as any).mock.calls[0][0]);
     expect(responseBody.error.code).toBe('invalid_request');
   });
+
+  it('should require API key for /artifacts when QWEN_LOCAL_API_KEY is set', async () => {
+    // APIキーを設定
+    getConfig({ QWEN_LOCAL_API_KEY: 'secret-key' });
+
+    // APIキーなしのリクエスト
+    const reqNoKey = createMockRequest('/artifacts/test.png');
+    const resNoKey = createMockResponse();
+    await handleRoutes(reqNoKey, resNoKey);
+    expect(resNoKey.writeHead).toHaveBeenCalledWith(401, expect.any(Object));
+
+    // 正しいAPIキーを持つヘッダーリクエスト
+    const reqWithHeader = createMockRequest('/artifacts/test.png', 'GET', {
+      'authorization': 'Bearer secret-key'
+    });
+    const resWithHeader = createMockResponse();
+    // 実際にはファイルが存在しないことによる404エラーを期待（＝認証を通過した証拠）
+    await handleRoutes(reqWithHeader, resWithHeader);
+    expect(resWithHeader.writeHead).toHaveBeenCalledWith(404, expect.any(Object));
+
+    // 正しいAPIキーを持つクエリパラメータリクエスト
+    const reqWithQuery = createMockRequest('/artifacts/test.png?api_key=secret-key');
+    const resWithQuery = createMockResponse();
+    await handleRoutes(reqWithQuery, resWithQuery);
+    expect(resWithQuery.writeHead).toHaveBeenCalledWith(404, expect.any(Object));
+
+    // クリーンアップ
+    getConfig({ QWEN_LOCAL_API_KEY: '' });
+  });
 });
