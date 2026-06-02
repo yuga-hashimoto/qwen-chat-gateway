@@ -87,6 +87,8 @@ cli
       } catch (err: any) {
         console.error('[CLI Error] Doctor diagnostics failed:', redact(err.message));
         process.exit(1);
+      } finally {
+        await defaultBrowserSession.close();
       }
     } else {
       console.error(`[CLI Error] Unknown browser action: ${action}. Use "open" or "doctor".`);
@@ -136,6 +138,8 @@ cli
     } catch (err: any) {
       console.error('[CLI Error] Chat operation failed:', redact(err.message));
       process.exit(1);
+    } finally {
+      await defaultBrowserSession.close();
     }
   });
 
@@ -171,6 +175,8 @@ cli
     } catch (err: any) {
       console.error('[CLI Error] Image generation failed:', redact(err.message));
       process.exit(1);
+    } finally {
+      await defaultBrowserSession.close();
     }
   });
 
@@ -206,6 +212,8 @@ cli
     } catch (err: any) {
       console.error('[CLI Error] Video generation failed:', redact(err.message));
       process.exit(1);
+    } finally {
+      await defaultBrowserSession.close();
     }
   });
 
