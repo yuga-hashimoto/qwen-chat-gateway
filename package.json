@@ -1,7 +1,7 @@
 {
   "name": "qwen-chat-gateway",
   "version": "0.1.0",
-  "description": "A lightweight gateway wrapping Qwen Chat Web session into a local API and MCP server.",
+  "description": "An unofficial lightweight browser gateway that wraps your active Qwen Chat Web session into an OpenAI-compatible API and a Model Context Protocol (MCP) server.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
