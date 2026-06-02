@@ -1,0 +1,41 @@
+{
+  "name": "qwen-chat-gateway",
+  "version": "0.1.0",
+  "description": "A lightweight gateway wrapping Qwen Chat Web session into a local API and MCP server.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "qwen-gateway": "./dist/cli.js"
+  },
+  "scripts": {
+    "dev": "tsx src/cli.ts",
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "start": "node dist/cli.js"
+  },
+  "keywords": [
+    "qwen",
+    "gateway",
+    "playwright",
+    "mcp",
+    "openai-api"
+  ],
+  "author": "yuga-hashimoto",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.4.0",
+    "cac": "^6.7.14",
+    "playwright-core": "^1.44.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "typescript": "^5.4.5",
+    "tsx": "^4.7.2",
+    "vitest": "^1.5.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "qwen-chat-gateway": {
+      "command": "qwen-gateway",
+      "args": ["mcp", "serve"],
+      "env": {
+        "QWEN_WEB_URL": "https://chat.qwen.ai",
+        "QWEN_BROWSER_USER_DATA_DIR": "./browser_data/qwen",
+        "QWEN_MIN_INTERVAL_MS": "60000"
+      }
+    }
+  }
+}
